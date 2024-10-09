@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
-from functions import StandardDeck, card_value, prob
+from functions import StandardDeck, card_value, prob_d
 
 
-def BlackJack(games,decks):
+def BlackJack_d(games,decks):
     """
         Prints Average Win Rate and Average Profit for a game of blackjack with histogram visuals of how much won per game
 
@@ -33,7 +33,6 @@ def BlackJack(games,decks):
         games_played = 0
         wr = 0
         pot = 0
-
         ###> Initialize n Decks
         deck = StandardDeck()
         for j in range (0,decks-1):
@@ -48,7 +47,7 @@ def BlackJack(games,decks):
         while len(deck) > 10:
             pbust = False
             dbust = False
-
+            dwin = False
             #print("Round #",games_played+1)
             ###>Deal cards
             pC = [deck.pop(), deck.pop()]
@@ -67,12 +66,11 @@ def BlackJack(games,decks):
                 #print("Dealer busted with:",dS)
                 dbust = True
 
-
-
             ###> Calculate probability of hitting and not busting
             hit = False
             stand = False
-            hit,stand = prob(pS,deck)
+            double = False
+            hit,stand,double = prob_d(pS,deck)
 
             ###> Loop players turn
             while (hit == True) & (pbust == False) & (dbust == False):
@@ -84,12 +82,24 @@ def BlackJack(games,decks):
                     #print("Player busted with:", pS)
                     pbust = True
                     break
-                hit,stand = prob(pS,deck)
+                hit,stand,double = prob_d(pS,deck)
+
+            if double == True:
+                new_card = deck.pop()
+                pC.append(new_card)
+                pS = sum(card_value(card) for card in pC)
+                #print("Players Cards:",pC,"Score: ",pS)
+                if pS>21:
+                    #print("Player busted with:", pS)
+                    pbust = True
 
             ###> If player busted, stop the game
             if pbust == True:
                 #print("Dealer Wins")
-                pot = pot - wager
+                if double == True:
+                    pot = pot - 2*wager
+                else:
+                    pot = pot - wager
 
             ###> Else, loop dealers turn
             else:
@@ -104,20 +114,32 @@ def BlackJack(games,decks):
 
                 if (dbust == True):
                     #print("Player Wins")
-                    pot = pot + wager
-                    games_won +=1
+                    if (double == True):
+                        pot = pot + 2*wager
+                        games_won +=1
+                    else:
+                        pot = pot + wager
+                        games_won +=1
                 else:
                     if pS==dS:
-                        #print("Tie")
+                        # print("Tie")
                         do_nothing = True
                     elif pS>dS:
                         #print("Player Wins")
-                        pot = pot + wager
-                        games_won +=1
+                        if double == True:
+                            pot = pot + 2*wager
+                            games_won +=1
+                        else:
+                            pot = pot + wager
+                            games_won +=1
                     else:
                         #print("Dealer Wins")
-                        pot = pot - wager
+                        if double == True:
+                            pot = pot - 2*wager
+                        else:
+                            pot = pot - wager
             #print(len(deck))
+            #print(pot)
             i +=1
             pC = 0
             pS = 0
@@ -147,4 +169,4 @@ def BlackJack(games,decks):
 if __name__ == "__main__":
     g = sys.argv[1]
     d = sys.argv[2]
-    BlackJack(g,d)
+    BlackJack_d(g,d)
